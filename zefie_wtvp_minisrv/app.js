@@ -599,7 +599,7 @@ async function processPath(socket, service_vault_file_path, request_headers = ne
                     })
 
                     if (request_is_async && !minisrv_config.config.debug_flags.quiet) console.debug(" * Script requested Asynchronous mode");
-                } else if (fs.existsSync(service_vault_file_path + ".php") || (service_vault_file_path.indexOf(".php") == service_vault_file_path.length - 4 && fs.existsSync(service_vault_file_path)) || fs.existsSync(service_vault_file_path + ".php")) {
+                } else if (fs.existsSync(service_vault_file_path + ".php") || (service_vault_file_path.endsWith(".php") && fs.existsSync(service_vault_file_path)) || service_vault_file_path.indexOf(".php") > 0) {
                     request_is_async = true;
                     if (minisrv_config.config.php_enabled && minisrv_config.config.php_binpath) {
                         if (fs.existsSync(service_vault_file_path + ".php") || fs.existsSync(service_vault_file_path)) {
@@ -626,7 +626,7 @@ async function processPath(socket, service_vault_file_path, request_headers = ne
                         sendToClient(socket, errpage[0], errpage[1]);
                         return;
                     }
-                } else if (fs.existsSync(service_vault_file_path + ".cgi") || (service_vault_file_path.indexOf(".cgi") == service_vault_file_path.length - 4 && fs.existsSync(service_vault_file_path)) || fs.existsSync(service_vault_file_path + ".cgi")) {
+                } else if (fs.existsSync(service_vault_file_path + ".cgi") || (service_vault_file_path.endsWith(".cgi") && fs.existsSync(service_vault_file_path)) || service_vault_file_path.indexOf(".cgi") > 0) {
                     request_is_async = true;
                     if (minisrv_config.config.php_enabled && minisrv_config.config.php_binpath) {
                         if (fs.existsSync(service_vault_file_path + ".cgi") || fs.existsSync(service_vault_file_path)) {
