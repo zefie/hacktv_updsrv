@@ -2433,11 +2433,17 @@ Content-type: text/html`;
             });
             request_headers.query = req.query;
             if (req.body) {
-                var data = "";
-                for (var i=0; i<req.body.length; i++) {
-                    data += String.fromCharCode(req.body[i]);
+                if (typeof(req.body) == "string") {
+                    request_headers.post_data = req.body;
+                } else if (req.body.length) {
+                    var data = "";
+                    for (var i=0; i<req.body.length; i++) {
+                        data += String.fromCharCode(req.body[i]);
+                    }
+                    request_headers.post_data = data;
+                } else {
+                    request_headers.post_data = "";
                 }
-                request_headers.post_data = data;
             } else {
                 request_headers.post_data = "";
             }
