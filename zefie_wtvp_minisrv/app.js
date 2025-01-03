@@ -321,6 +321,14 @@ var runScriptInVM = function (script_data, user_contextObj = {}, privileged = fa
 
 async function handleCGI(executable, cgi_file, socket, request_headers, vault, service_name, session_data = null, extra_path = "")
 {
+    const SAFE_ROOT = path.resolve(__dirname);
+    vault = path.resolve(vault);
+    if (!vault.startsWith(SAFE_ROOT)) {
+        console.error("Invalid vault path:", vault);
+        var errpage = wtvshared.doErrorPage(403);
+        sendToClient(socket, errpage[0], errpage[1]);
+        return;
+    }
     var env = wtvshared.cloneObj(process.env);
     env.QUERY_STRING = "";
     var request_data = new Array();
