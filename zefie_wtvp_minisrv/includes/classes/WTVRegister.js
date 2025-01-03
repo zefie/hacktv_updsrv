@@ -22,7 +22,7 @@ class WTVRegister {
     }
 
     checkUsernameSanity(username) {
-        var regex_str = "^([A-Za-z0-9\-\_]{" + this.minisrv_config.config.user_accounts.min_username_length + "," + this.minisrv_config.config.user_accounts.max_username_length + "})$";
+        var regex_str = "^([A-Za-z0-9-\_]{" + this.minisrv_config.config.user_accounts.min_username_length + "," + this.minisrv_config.config.user_accounts.max_username_length + "})$";
         var regex = new RegExp(regex_str);
         return regex.test(username);
     }

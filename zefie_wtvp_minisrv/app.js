@@ -1568,7 +1568,7 @@ async function sendToClient(socket, headers_obj, data = null) {
         socket.res.writeHead(resCode, headers_obj);
         socket.res.end(data);
         if (minisrv_config.config.debug_flags.show_headers) console.debug(" * Outgoing PC headers on " + socket.service_name + " socket ID", socket.id, headers_obj);
-        if (minisrv_config.config.debug_flags.quiet) console.debug(" * Sent response " + headers_obj.status + " to PC client (Content-Type:", headers_obj['Content-Type'], "~", headers_obj['Content-length'], "bytes)");
+        if (minisrv_config.config.debug_flags.quiet) console.debug(" * Sent response " + headers_obj.Status + " to PC client (Content-Type:", headers_obj['Content-type'], "~", headers_obj['Content-length'], "bytes)");
     } else {
         var toClient = null;
         if (typeof data == 'string') {
@@ -1584,7 +1584,7 @@ async function sendToClient(socket, headers_obj, data = null) {
             } else {
                 sendToSocket(socket, new Buffer.from(concatArrayBuffer(Buffer.from(headers + end_of_line), data)));
             }
-            if (minisrv_config.config.debug_flags.quiet) console.debug(" * Sent" + verbosity_mod + " " + headers_obj.status + " to client (Content-Type:", headers_obj['Content-Type'], "~", headers_obj['Content-length'], "bytes)");
+            if (minisrv_config.config.debug_flags.quiet) console.debug(" * Sent" + verbosity_mod + " " + headers_obj.Status + " to client (Content-Type:", headers_obj['Content-type'], "~", headers_obj['Content-length'], "bytes)");
         }
     }
 }
