@@ -1572,7 +1572,7 @@ async function sendToClient(socket, headers_obj, data = null) {
     }
 
     // Delete any other stray minisrv headers (we process them all before this)
-    Object.keys(header_obj).forEach(function (k) {
+    Object.keys(headers_obj).forEach(function (k) {
         if (k.indexOf("minisrv-") == 0) {
             delete headers_obj[k];
         }
