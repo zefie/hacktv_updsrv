@@ -1341,7 +1341,7 @@ function headerStringToObj(headers, response = false) {
 async function sendToClient(socket, headers_obj, data = null) {
     var headers = "";
     var content_length = 0;
-    var end_of_line = "\n";
+    var eol = "\n";
     if (typeof (data) === 'undefined' || data === null) data = '';
     if (typeof (headers_obj) === 'string') {
         // string to header object
@@ -1406,16 +1406,23 @@ async function sendToClient(socket, headers_obj, data = null) {
     if (socket_sessions[socket.id]) {
         if (socket_sessions[socket.id].request_headers) {
             if (socket_sessions[socket.id].request_headers.service_file_path) {
-                if (wtvshared.getFileExt(socket_sessions[socket.id].request_headers.service_file_path).toLowerCase() !== "js" || socket_sessions[socket.id].request_headers.raw_file === true) {
-                    var last_modified = wtvshared.getFileLastModifiedUTCString(socket_sessions[socket.id].request_headers.service_file_path);
-                    if (last_modified) headers_obj["Last-Modified"] = last_modified;
+                // Don't change Last-modified header if provided already
+                if (!headers['Last-Modified']) {
+                    // Only add the header if not a js, php, or cgi file                    
+                    if (wtvshared.getFileExt(socket_sessions[socket.id].request_headers.service_file_path).toLowerCase() !== "js" || 
+                        wtvshared.getFileExt(socket_sessions[socket.id].request_headers.service_file_path).toLowerCase() !== "php" ||
+                        wtvshared.getFileExt(socket_sessions[socket.id].request_headers.service_file_path).toLowerCase() !== "cgi" ||
+                        socket_sessions[socket.id].request_headers.raw_file === true) {
+                            var last_modified = wtvshared.getFileLastModifiedUTCString(socket_sessions[socket.id].request_headers.service_file_path);
+                            if (last_modified) headers_obj["Last-Modified"] = last_modified;
+                    }
                 }
             }
         }
     }
 
 
-    // if box can do compression, see if its worth enabling
+    // if client can do compression, see if its worth enabling
     // small files actually get larger, so don't compress them
     var compression_type = 0;
     if (content_length >= 256) compression_type = wtvmime.shouldWeCompress(ssid_sessions[socket.ssid], headers_obj);
@@ -1436,7 +1443,7 @@ async function sendToClient(socket, headers_obj, data = null) {
     }
 
     if (socket.res) { // pc mode with response object available
-        if (compression_type == 1) compression_type = 2; // just in case
+        if (compression_type == 1) compression_type = 2; // wtv-lzpf not supported in pc mode
     }
 
     // compress if needed
@@ -1505,7 +1512,6 @@ async function sendToClient(socket, headers_obj, data = null) {
     if (headers_obj["minisrv-force-content-length"]) {
         headers_obj["Content-length"] = headers_obj["minisrv-force-content-length"];
         delete headers_obj["minisrv-force-content-length"];
-
     }
 
     if (!socket.res) {
@@ -1533,25 +1539,27 @@ async function sendToClient(socket, headers_obj, data = null) {
     var xpower = wtvshared.getCaseInsensitiveKey("x-powered-by", headers_obj);
     if (!xpower) {
         // add X-Powered-By header if not WebTV and not already set
-        if (!socket.ssid) headers_obj['X-Powered-By'] = "NodeJS ("+process.version+") Express via " + z_title;
+        xpower = 'X-Powered-By';
+        if (!socket.ssid) headers_obj[xpower] = "NodeJS ("+process.version+") Express via " + z_title;
     } else {
         // delete if webtv
         if (socket.ssid) delete headers_obj[xpower];
     }
-    headers_obj = wtvshared.moveObjectKey("x-powered-by", -2, headers_obj, true) // move x-powered-by before Content-type
+
+    if (headers_obj[xpower]) headers_obj = wtvshared.moveObjectKey(xpower, -2, headers_obj, true) // move x-powered-by before Content-type
 
     if (!socket.res) {
         // header object to string
         if (minisrv_config.config.debug_flags.show_headers) console.debug(" * Outgoing headers on socket ID", socket.id, headers_obj);
         Object.keys(headers_obj).forEach(function (k) {
             if (k == "Status") {
-                headers += headers_obj[k] + end_of_line;
+                headers += headers_obj[k] + eol;
             } else {
                 if (k.indexOf('_') >= 0) {
                     var j = k.split('_')[0];
-                    headers += j + ": " + headers_obj[k] + end_of_line;
+                    headers += j + ": " + headers_obj[k] + eol;
                 } else {
-                    headers += k + ": " + headers_obj[k] + end_of_line;
+                    headers += k + ": " + headers_obj[k] + eol;
                 }
             }
         });
@@ -1562,6 +1570,14 @@ async function sendToClient(socket, headers_obj, data = null) {
             }
         }
     }
+
+    // Delete any other stray minisrv headers (we process them all before this)
+    Object.keys(header_obj).forEach(function (k) {
+        if (k.indexOf("minisrv-") == 0) {
+            delete headers_obj[k];
+        }
+    });
+
     // send to client
     if (socket.res) {
         var resCode = parseInt(headers_obj.Status.substr(0, 3));        
@@ -1572,17 +1588,17 @@ async function sendToClient(socket, headers_obj, data = null) {
     } else {
         var toClient = null;
         if (typeof data == 'string') {
-            toClient = headers + end_of_line + data;
+            toClient = headers + eol + data;
             sendToSocket(socket, Buffer.from(toClient));
         } else if (typeof data == 'object') {
             if (minisrv_config.config.debug_flags.quiet) var verbosity_mod = (headers_obj["wtv-encrypted"] == 'true') ? " encrypted response" : "";
             if (socket_sessions[socket.id].secure_headers == true) {
                 // encrypt headers
                 if (minisrv_config.config.debug_flags.quiet) verbosity_mod += " with encrypted headers";
-                var enc_headers = socket_sessions[socket.id].wtvsec.Encrypt(1, headers + end_of_line);
+                var enc_headers = socket_sessions[socket.id].wtvsec.Encrypt(1, headers + eol);
                 sendToSocket(socket, new Buffer.from(concatArrayBuffer(enc_headers, data)));
             } else {
-                sendToSocket(socket, new Buffer.from(concatArrayBuffer(Buffer.from(headers + end_of_line), data)));
+                sendToSocket(socket, new Buffer.from(concatArrayBuffer(Buffer.from(headers + eol), data)));
             }
             if (minisrv_config.config.debug_flags.quiet) console.debug(" * Sent" + verbosity_mod + " " + headers_obj.Status + " to client (Content-Type:", headers_obj['Content-type'], "~", headers_obj['Content-length'], "bytes)");
         }
