@@ -738,11 +738,10 @@ async function processPath(socket, service_vault_file_path, request_headers = ne
                         sendRawFile(socket, service_vault_file_path);
                     }
                 } else {
-                    // look for a catchallin the current path and all parent paths up until the service root
-                    if (minisrv_config.config.catchall_file_name) {
-                        var minisrv_catchall_file_name = null;
-                        if (minisrv_config.services[service_name]) minisrv_catchall_file_name = minisrv_config.services[service_name].catchall_file_name || minisrv_config.config.catchall_file_name || null;
-                        else minisrv_catchall_file_name = minisrv_config.config.catchall_file_name || null;
+                    // look for a catchall in the current path and all parent paths up until the service root
+                    var service_config = minisrv_config.services[service_name] || {};
+                    if (minisrv_config.config.catchall_file_name || service_config['catchall_file_name']) {
+                        var minisrv_catchall_file_name = service_config['catchall_file_name'] || minisrv_config.config.catchall_file_name || null;
                         if (minisrv_catchall_file_name) {
                             var service_check_dir = service_vault_file_path.split(path.sep);
                             service_check_dir.pop(); // pop filename
@@ -750,21 +749,48 @@ async function processPath(socket, service_vault_file_path, request_headers = ne
                             while (service_check_dir.join(path.sep) != service_vault_dir && service_check_dir.length > 0) {
                                 var catchall_file = service_check_dir.join(path.sep) + path.sep + minisrv_catchall_file_name;
                                 if (fs.existsSync(catchall_file)) {
+
                                     service_vault_found = true;
                                     if (!minisrv_config.config.debug_flags.quiet) console.debug(" * Found catchall at " + catchall_file + " to handle request (JS Interpreter Mode) [Socket " + socket.id + "]");
                                     request_headers.service_file_path = catchall_file;
-                                    var script_data = fs.readFileSync(catchall_file).toString();
+                                    if (catchall_file.endsWith(".js")) {
+                                        var script_data = fs.readFileSync(catchall_file).toString();
 
-                                    var vmResults = runScriptInVM(script_data, contextObj, privileged, catchall_file);
+                                        var vmResults = runScriptInVM(script_data, contextObj, privileged, catchall_file);
 
-                                    updateFromVM.forEach((item) => {
-                                        // Here we read back certain data from the ServiceVault Script Context Object
-                                        try {
-                                            if (typeof vmResults[item[1]] !== "undefined") eval(item[0] + ' = vmResults["' + item[1] + '"]');
-                                        } catch (e) {
-                                            console.error("vm readback error", e);
+                                        updateFromVM.forEach((item) => {
+                                            // Here we read back certain data from the ServiceVault Script Context Object
+                                            try {
+                                                if (typeof vmResults[item[1]] !== "undefined") eval(item[0] + ' = vmResults["' + item[1] + '"]');
+                                            } catch (e) {
+                                                console.error("vm readback error", e);
+                                            }
+                                        });
+                                    } else if (catchall_file.endsWith(".php")) {
+                                        if (minisrv_config.config.php_enabled && minisrv_config.config.php_binpath) {
+                                            request_is_async = true;
+                                            var extra_path = service_check_dir.join(path.sep) + path.sep + request_headers.request_url.replace(service_name + ":/", "");
+                                            if (!minisrv_config.config.debug_flags.quiet) console.debug(" * Found catchall at " + catchall_file + " to handle request (CGI Interpreter Mode) [Socket " + socket.id + "]");
+                                            handlePHP(socket, request_headers, catchall_file, service_vault_dir + path.sep + service_name, (pc_services) ? pc_service_name : service_name, (pc_services) ? null : ssid_sessions[socket.ssid], extra_path)
+                                        } else {
+                                            // php is not enabled, don't expose source code
+                                            var errpage = wtvshared.doErrorPage(403);
+                                            sendToClient(socket, errpage[0], errpage[1]);
+                                            return;
                                         }
-                                    });
+                                    } else if (catchall_file.endsWith(".cgi")) {
+                                        if (minisrv_config.config.cgi_enabled) {
+                                            request_is_async = true;
+                                            var extra_path = service_check_dir.join(path.sep) + path.sep + request_headers.request_url.replace(service_name + ":/", "");
+                                            if (!minisrv_config.config.debug_flags.quiet) console.debug(" * Found catchall at " + catchall_file + " to handle request (CGI Interpreter Mode) [Socket " + socket.id + "]");
+                                            handleCGI(catchall_file, catchall_file, socket, request_headers, service_vault_dir + path.sep + service_name, (pc_services) ? pc_service_name : service_name, (pc_services) ? null : ssid_sessions[socket.ssid], extra_path)
+                                        } else {
+                                            // cgi is not enabled, don't expose source code
+                                            var errpage = wtvshared.doErrorPage(403);
+                                            sendToClient(socket, errpage[0], errpage[1]);
+                                            return;
+                                        }
+                                    }
 
                                     if (request_is_async && !minisrv_config.config.debug_flags.quiet) console.debug(" * Script requested Asynchronous mode");
                                     break;
