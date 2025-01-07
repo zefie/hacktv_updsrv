@@ -370,7 +370,11 @@ async function handleCGI(executable, cgi_file, socket, request_headers, vault, s
     env.SERVER_PORT = request_data.port;
     env.SERVER_ADDR = request_data.host;
     env.SERVER_NAME = request_data.host;
-    env.SERVER_SOFTWARE = "Node "+process.versions.node+" Express via " + z_title;;
+    if (minisrv_config.services[socket.service_name].hide_minisrv_version) {
+        env.SERVER_SOFTWARE = "Node Express via zefie's minisrv";
+    } else {
+        env.SERVER_SOFTWARE = "Node ("+process.versions.node+") Express via " + z_title;
+    }
     env.SERVER_SIGNATURE = z_title;
     env.ALL_RAW = request_headers.raw_headers;
     var raw_header_split = env.ALL_RAW.split("\r\n");
