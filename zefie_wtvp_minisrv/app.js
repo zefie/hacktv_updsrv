@@ -1566,7 +1566,13 @@ async function sendToClient(socket, headers_obj, data = null) {
     if (!xpower) {
         // add X-Powered-By header if not WebTV and not already set
         xpower = 'X-Powered-By';
-        if (!socket.ssid) headers_obj[xpower] = "NodeJS ("+process.version+") Express via " + z_title;
+        if (minisrv_config.services[socket.service_name].hide_minisrv_version) {   
+            // Don't report version         
+            if (!socket.ssid) headers_obj[xpower] = "NodeJS Express via zefie's minisrv";
+        } else {
+            // Full version
+            if (!socket.ssid) headers_obj[xpower] = "NodeJS ("+process.version+") Express via " + z_title;
+        }
     } else {
         // delete if webtv
         if (socket.ssid) delete headers_obj[xpower];
