@@ -495,6 +495,7 @@ class WTVShared {
 
         log(" *** Reading global configuration...");
         try {
+            console.log(this.getAbsolutePath(".." + this.path.sep + "config.json", __dirname))
             var minisrv_config = this.parseJSON(this.fs.readFileSync(this.getAbsolutePath(".." + this.path.sep + "config.json", __dirname)));
         } catch (e) {
             throw new Error("ERROR: Could not read config.json", e);
@@ -837,7 +838,7 @@ class WTVShared {
     * @param {string} directory Root directory
     */
     getAbsolutePath(path = '', directory = '.') {
-        if (directory[0] == "/") {
+        if (directory[0] == "/" || directory.substr(1,2) == ":" + this.path.sep) {
             return this.path.resolve(directory + this.path.sep + path);
         }
         try {
