@@ -975,6 +975,15 @@ class WTVShared {
         }
     }
 
+    doRedirect(url) {
+        var headers = []
+        headers['Status'] = "302 Moved";
+        headers["Location"] = url;
+        headers["wtv-visit"] = url;
+        var data = ''
+        return [headers, data]
+    }
+
     /**
      * Creates an error message and sends it to the client
      * @param {number} code HTTP Error Code

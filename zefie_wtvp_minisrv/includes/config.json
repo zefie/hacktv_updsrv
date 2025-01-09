@@ -55,14 +55,9 @@
       "max_users_per_account": 6, // Max total users (including primary) per account
       "min_username_length": 5, // minimum username length
       "max_username_length": 18, // maximum username length
-      "reserved_names": [
-        // reserved account names, users (nor admins) can register these
-        "AccountDisabled",
-        "Demo",
-        "abuse",
-        "support",
-        "registration",
-        "null"
+      "reserved_names_files": [
+        "includes/badWords.json",
+        "includes/reservedWords.json"
       ]
     },
     "pc_admin": {

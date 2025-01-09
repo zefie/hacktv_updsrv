@@ -1568,7 +1568,7 @@ async function sendToClient(socket, headers_obj, data = null) {
 
     // remove x-powered-by header if client is WebTV
     var xpower = wtvshared.getCaseInsensitiveKey("x-powered-by", headers_obj);
-    if (!xpower) {
+    if (!xpower && socket.service_name) {
         // add X-Powered-By header if not WebTV and not already set
         xpower = 'X-Powered-By';
         if (minisrv_config.services[socket.service_name].hide_minisrv_version) {   
