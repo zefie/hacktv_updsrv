@@ -833,7 +833,7 @@ class WTVShared {
     }
 
     /**
-    * Returns an absolute path
+    * Returns an absolute path with an trailing path seperator
     * @param {string} path 
     * @param {string} directory Root directory
     */
@@ -864,7 +864,7 @@ class WTVShared {
             console.error('Error resolving directory:', e);
         }
         // The path.resolve method will take care of normalizing slashes
-        return this.path.resolve(path);
+        return this.path.resolve(path) + this.path.sep;
     }
 
 
