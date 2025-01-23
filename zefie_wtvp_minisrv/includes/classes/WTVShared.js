@@ -73,7 +73,7 @@ class WTVShared {
 
     // check if the SSID has a valid checksum
     checkSSID(ssid) {
-        if (ssid.slice(-2) == this.getSSIDCRC(ssid))
+        if ((ssid.slice(-2) == this.getSSIDCRC(ssid)) && ssid.length == 16)
             return true;
         return false;
     }
