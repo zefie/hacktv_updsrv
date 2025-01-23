@@ -2481,6 +2481,7 @@ Content-type: text/html`;
             }
         })
         server.post('*', (req, res) => {
+            var errpage = null;
             var ssl = (req.socket.ssl) ? true : false;
             var service_name = getServiceByPort(v);
             req.socket.minisrv_pc_mode = true;
@@ -2499,19 +2500,21 @@ Content-type: text/html`;
             });
             request_headers.query = req.query;
             if (req.body) {
-                if (typeof(req.body) == "string") {
+                if (typeof (req.body) == "string") {
                     request_headers.post_data = req.body;
                 } else if (req.body.length) {
-                    var data = "";
-                    for (var i=0; i<req.body.length; i++) {
-                        data += String.fromCharCode(req.body[i]);
+                    if (req.body.length > (minisrv_config.config.max_post_length * 1024 * 1024)) {
+                        errpage = wtvshared.doErrorPage("400", "POST size too large");
+                    } else {
+                        var data = "";
+                        for (var i = 0; i < req.body.length; i++) {
+                            data += String.fromCharCode(req.body[i]);
+                        }
+                        request_headers.post_data = data;
                     }
-                    request_headers.post_data = data;
                 } else {
                     request_headers.post_data = "";
                 }
-            } else {
-                request_headers.post_data = "";
             }
 
             if (minisrv_config.config.debug_flags.show_headers) console.log(" * Incoming " + ((ssl) ? "HTTPS" : "HTTP") + " PC POST Headers on", service_name, "socket ID", req.socket.id, wtvshared.filterRequestLog(request_headers));
@@ -2520,6 +2523,8 @@ Content-type: text/html`;
 Location: https://${(minisrv_config.services[service_name].https_cert.domain) ? minisrv_config.services[service_name].https_cert.domain : minisrv_config.services[service_name].host}:${minisrv_config.services[service_name].port}${req.originalUrl}
 Content-type: text/html`;
                 sendToClient(req.socket, headers);
+            } else if (errpage) {
+                sendToClient(req.socket, errpage[0], errpage[1]);
             } else {
                 processURL(req.socket, request_headers, true)
             }
