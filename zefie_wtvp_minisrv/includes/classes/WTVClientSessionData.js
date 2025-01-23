@@ -237,12 +237,12 @@ class WTVClientSessionData {
 
     setPendingTransfer(ssid) {
         var pending_file = this.getUserStoreDirectory(true) + this.path.sep + "pending_transfer.json";
-        var ssidobj = { "ssid": ssid };
+        var ssidobj = { "ssid": ssid, "type": "source" };
         this.fs.writeFileSync(pending_file, JSON.stringify(ssidobj));
         var new_userstore = this.getAccountStoreDirectory() + this.path.sep + ssidobj.ssid;
         if (!this.fs.existsSync(new_userstore)) this.fs.mkdirSync(new_userstore);
         var dest_pending_file = new_userstore + this.path.sep + "pending_transfer.json";
-        var ssidobj = { "ssid": this.ssid };
+        var ssidobj = { "ssid": this.ssid, "type": "target" };
         this.fs.writeFileSync(dest_pending_file, JSON.stringify(ssidobj));
     }
 
@@ -259,6 +259,22 @@ class WTVClientSessionData {
             return ssidobj.ssid
         }
         return null;
+    }
+
+    hasPendingTransfer(dtype = null) {
+        var pending_file = this.getUserStoreDirectory(true) + this.path.sep + "pending_transfer.json";
+        if (this.fs.existsSync(pending_file)) {
+            var ssidobj = JSON.parse(this.fs.readFileSync(pending_file));
+            console.log(ssidobj)
+            if (dtype) {
+                (ssidobj.type == dtype) ? ssidobj.ssid : false;
+            }
+            else {
+                return ssidobj;
+            }
+        } else {
+            return false
+        }
     }
 
     /**

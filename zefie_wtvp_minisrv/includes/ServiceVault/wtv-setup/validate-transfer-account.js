@@ -52,7 +52,7 @@ if (!session_data.getUserPasswordEnabled()) {
             'buttonlabel1': "Cancel Transfer",
             'buttonaction1': "wtv-setup:/cancel-account-transfer",
             'buttonlabel2': "Power Off",
-            'buttonaction2': "client:donothing", // TODO: change to poweroff when code is ready
+            'buttonaction2': "client:poweroff", // TODO: change to poweroff when code is ready
             'noback': true,
         }).getURL();
 
