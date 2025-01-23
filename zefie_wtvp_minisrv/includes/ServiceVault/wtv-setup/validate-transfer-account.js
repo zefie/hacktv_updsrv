@@ -42,7 +42,7 @@ if (!session_data.getUserPasswordEnabled()) {
         data = errpage[1];
     }
     else if (!wtvr.checkSSIDAvailable(request_headers.query.ssid)) {
-        var errpage = wtvshared.doErrorPage(400, "The destination already has an account registered. Please delete the account associated with the target SSID then try again.");
+        var errpage = wtvshared.doErrorPage(400, "The destination already has an account registered, or a transfer is already in progress. Please delete the account associated with the target SSID, or cancel the pending transfer, then try again.");
         headers = errpage[0];
         data = errpage[1];
     } else {
@@ -56,12 +56,10 @@ if (!session_data.getUserPasswordEnabled()) {
             'noback': true,
         }).getURL();
 
+        session_data.setPendingTransfer(request_headers.query.ssid);
         var errpage = wtvshared.doRedirect(transferInitiated);
         headers = errpage[0];
         data = errpage[1];
-
-        // TODO: Actually implement
-
     }
 } else {
     var errpage = wtvshared.doErrorPage(400, "Invalid Parameter");
