@@ -495,7 +495,7 @@ class WTVShared {
 
         log(" *** Reading global configuration...");
         try {            
-            var minisrv_config = this.parseJSON(this.fs.readFileSync(this.getAbsolutePath(".." + this.path.sep + "config.json", __dirname)));
+            var minisrv_config = this.parseJSON(this.fs.readFileSync(this.getAbsolutePath("includes" + this.path.sep + "config.json", this.appdir)));
         } catch (e) {
             throw new Error("ERROR: Could not read config.json", e);
         }
@@ -1130,7 +1130,7 @@ class WTVShared {
             if (found) return;
             if (template) dep_vault_dir += self.path.sep + "templates";
 
-            var search = self.getAbsolutePath(dep_vault_dir + self.path.sep + file);
+            var search = self.getAbsolutePath(file, dep_vault_dir);
             if (self.fs.existsSync(search)) {
                 if (path_only) outdata = search;
                 else outdata = self.fs.readFileSync(search);
