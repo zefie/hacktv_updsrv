@@ -494,8 +494,7 @@ class WTVShared {
         };
 
         log(" *** Reading global configuration...");
-        try {
-            console.log(this.getAbsolutePath(".." + this.path.sep + "config.json", __dirname))
+        try {            
             var minisrv_config = this.parseJSON(this.fs.readFileSync(this.getAbsolutePath(".." + this.path.sep + "config.json", __dirname)));
         } catch (e) {
             throw new Error("ERROR: Could not read config.json", e);
@@ -523,10 +522,10 @@ class WTVShared {
             debugFlags.quiet = minisrv_config.config.verbosity < 2;
             debugFlags.show_headers = minisrv_config.config.verbosity === 2
             debugFlags.debug = minisrv_config.config.verbosity === 3;
-            log(` * Console Verbosity level ${minisrv_config.config.verbosity}`);
+            log(` *** Console Verbosity level ${minisrv_config.config.verbosity}`);
         } else {
             Object.assign(debugFlags, { debug: true, quiet: false, show_headers: true });
-            log(" * Console Verbosity level 4 (debug verbosity)");
+            log(" *** Console Verbosity level 4 (debug verbosity)");
         }
 
         minisrv_config.config.debug_flags = debugFlags;
@@ -838,12 +837,24 @@ class WTVShared {
     * @param {string} directory Root directory
     */
     getAbsolutePath(path = '', directory = '.') {
-        if (directory[0] == "/" || directory.substr(1,2) == ":" + this.path.sep) {
-            return this.path.resolve(directory + this.path.sep + path);
+        if (directory[0] == "/" || directory.substr(1, 2) == ":" + this.path.sep) {
+            var newpath = this.path.resolve(directory + this.path.sep + path);
+            if (this.fs.existsSync(newpath)) {
+                this.fs.statSync(newpath, (err, stats) => {
+                    if (err) {
+                        console.log('Error checking path:', err);
+                    } else {
+                        if (stats.isDirectory()) {
+                            newpath += this.path.sep
+                        }
+                    }
+                });
+            }
+            return newpath;
         }
         try {
             // start with our absolute path (of app.js)
-            const appdir = this.path.resolve(__dirname + this.path.sep + '..' + this.path.sep + '..')
+            const appdir = this.path.resolve(__dirname + this.path.sep + '..' + this.path.sep + '..') + this.path.sep
 
             if (path == '' && directory == '.') {
                 return appdir;
@@ -863,8 +874,27 @@ class WTVShared {
             // If there's an error accessing the directory, log it or handle as needed
             console.error('Error resolving directory:', e);
         }
+        // determine if the final path is a directory, and add a final path.sep if so
+        var add_sep = false;
+        if (this.fs.existsSync(path)) {
+            this.fs.statSync(path, (err, stats) => {
+                if (err) {
+                    console.log('Error checking path:', err);
+                } else {
+                    if (stats.isDirectory()) {
+                        add_sep = true
+                    }
+                }
+            });
+        } else {
+            // path doesn't exist, we have to guess if its a directory
+            var path_split = this.path.resolve(path).split(this.path.sep);
+            if (path_split[(path_split.length - 1)].indexOf('.') > -1) {
+                add_sep = true;
+            }
+        }
         // The path.resolve method will take care of normalizing slashes
-        return this.path.resolve(path) + this.path.sep;
+        return this.path.resolve(path) + ((add_sep) ? this.path.sep : '');
     }
 
 

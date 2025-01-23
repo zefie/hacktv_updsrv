@@ -2276,7 +2276,10 @@ var z_title = "zefie's wtv minisrv v" + require('./package.json').version;
 var z_cgiver = "minisrv/" + require('./package.json').version;
 if (git_commit) z_title += " (git " + git_commit + ")";
 console.log("**** Welcome to " + z_title + "  ****");
-console.log("**** Detected nodejs v"+process.versions.node+" ***")
+console.log("**** Detected nodejs v" + process.versions.node + " ****")
+var application_root = wtvshared.getAbsolutePath('', __dirname)
+console.log("**** Application Root Path:", application_root, "****")
+
 
 minisrv_config = wtvshared.getMiniSrvConfig(); // snatches minisrv_config
 const wtvmime = new WTVMime(minisrv_config);
