@@ -10,32 +10,33 @@ var wtvsec_login = null;
 hasPendingTransfer = session_data.hasPendingTransfer()
 if (hasPendingTransfer) {
 	if (hasPendingTransfer.type == "target") {
-		var ssidobj = session_data.hasPendingTransfer();
-		var xferSession = new WTVClientSessionData(minisrv_config, ssidobj.ssid);
+		var xferSession = new WTVClientSessionData(minisrv_config, hasPendingTransfer.ssid);
 		xferSession.user_id = 0
-		var primary_username = xferSession.listPrimaryAccountUsers()[0];
-		var transferCanceled = new clientShowAlert({
+		var primary_username = xferSession.listPrimaryAccountUsers()['subscriber']['subscriber_username'];
+		console.log(xferSession.listPrimaryAccountUsers())
+		var transferPendingDest = new clientShowAlert({
 			'image': minisrv_config.config.service_logo,
 			'message': "There is a pending transfer of the account <b>" + primary_username + "</b>, would you like to complete the transfer, or cancel it?",
-			'buttonlabel1': "Okay",
-			'buttonaction1': "wtv-home:/home",
+			'buttonlabel1': "Complete Transfer",
+			'buttonaction1': "wtv-head-waiter:/complete-account-transfer",
+			'buttonlabel2': "Cancel Transfer",
+			'buttonaction2': "wtv-head-waiter:/cancel-account-transfer",
 			'noback': true,
 		}).getURL();
-		var errpage = wtvshared.doRedirect(transferCanceled);
+		var errpage = wtvshared.doRedirect(transferPendingDest);
 		var headers = errpage[0];
 		var data = errpage[1];
 	} else if (hasPendingTransfer.type == "source") {
-		var ssidobj = session_data.hasPendingTransfer();
-		var transferPending = new clientShowAlert({
+		var transferPendingSrc = new clientShowAlert({
 			'image': minisrv_config.config.service_logo,
-			'message': "There is a pending transfer of this account to <b>" + ssidobj.ssid + "</b>. In order to use this box, you need to complete or cancel the transfer.",
+			'message': "There is a pending transfer of this account to <b>" + hasPendingTransfer.ssid + "</b>. In order to use this box, you need to complete or cancel the transfer.",
 			'buttonlabel1': "Power Off",
 			'buttonaction1': "client:poweroff",
 			'buttonlabel2': "Cancel Transfer",
 			'buttonaction2': "wtv-head-waiter:/cancel-account-transfer",
 			'noback': true,
 		}).getURL();
-		var errpage = wtvshared.doRedirect(transferPending);
+		var errpage = wtvshared.doRedirect(transferPendingSrc);
 		var headers = errpage[0];
 		var data = errpage[1];
 	} else {

@@ -261,6 +261,25 @@ class WTVClientSessionData {
         return null;
     }
 
+    finalizePendingTransfer() {
+        var pending_file = this.getUserStoreDirectory(true) + this.path.sep + "pending_transfer.json";
+        var file = this.fs.readFileSync(pending_file)
+        var ssidobj = JSON.parse(file);
+        if (ssidobj.type != "target") return false; // Only allow completion from target
+        var source_ssid = ssidobj.ssid
+        var old_account = this.getAccountStoreDirectory() + this.path.sep + source_ssid
+        var new_account = this.getUserStoreDirectory(true);
+        this.fs.cpSync(old_account, new_account, {
+            filter: (source, _destination) => {
+                return source != "pending_transfer.json";
+            }, 
+            recursive: true
+        });
+        this.fs.rmSync(old_account, { recursive: true })
+        this.fs.rmSync(pending_file);
+        return true;
+    }
+
     hasPendingTransfer(dtype = null) {
         var pending_file = this.getUserStoreDirectory(true) + this.path.sep + "pending_transfer.json";
         if (this.fs.existsSync(pending_file)) {

@@ -95,6 +95,7 @@
       "wtv-head-waiter:/login",
       "wtv-head-waiter:/ValidateLogin",
       "wtv-head-waiter:/login-stage-two",
+      "wtv-head-waiter:/complete-account-transfer",
       "wtv-head-waiter:/cancel-account-transfer",
       "wtv-head-waiter:/relogin",
       "wtv-head-waiter:/ROMCache/Spacer.gif",
