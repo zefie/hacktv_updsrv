@@ -13,7 +13,6 @@ if (hasPendingTransfer) {
 		var xferSession = new WTVClientSessionData(minisrv_config, hasPendingTransfer.ssid);
 		xferSession.user_id = 0
 		var primary_username = xferSession.listPrimaryAccountUsers()['subscriber']['subscriber_username'];
-		console.log(xferSession.listPrimaryAccountUsers())
 		var transferPendingDest = new clientShowAlert({
 			'image': minisrv_config.config.service_logo,
 			'message': "There is a pending transfer of the account <b>" + primary_username + "</b>, would you like to complete the transfer, or cancel it?",
