@@ -1336,9 +1336,10 @@ function headerStringToObj(headers, response = false) {
         if (/^SECURE ON/.test(d) && !response) {
             headers_obj.secure = true;
         } else if (/^([0-9]{3}) $/.test(d.substring(0, 4)) && response && !headers_obj.Status) {
-            headers_obj.Status = d.replace("\r", "");
+            d.s
+            headers_obj.Status = d.trim("\r");
         } else if (/^(GET |PUT |POST)$/.test(d.substring(0, 4)) && !response) {
-            headers_obj.request = d.replace("\r", "");
+            headers_obj.request = d.trim("\r");
             var request_url = d.split(' ');
             if (request_url.length > 2) {
                 request_url.shift();
@@ -1350,7 +1351,7 @@ function headerStringToObj(headers, response = false) {
             } else {
                 request_url = request_url[1];
             }
-            headers_obj.request_url = decodeURI(request_url).replace("\r", "");
+            headers_obj.request_url = decodeURI(request_url).trim("\r");
         } else if (d.indexOf(":") > 0) {
             var d_split = d.split(':');
             var header_name = d_split[0];
@@ -1360,7 +1361,7 @@ function headerStringToObj(headers, response = false) {
             }
             d_split.shift();
             d = d_split.join(':');
-            headers_obj[header_name] = (d).replace("\r", "");
+            headers_obj[header_name] = (d).trim("\r");
             if (headers_obj[header_name].substring(0, 1) == " ") {
                 headers_obj[header_name] = headers_obj[header_name].substring(1);
             }
