@@ -50,13 +50,14 @@ if (!session_data.getUserPasswordEnabled()) {
             'image': minisrv_config.config.service_logo,
             'message': "Your account transfer is pending. Please connect to this server with the destination box. A prompt should appear instead of registration. To cancel the transfer, select <b>Cancel Transfer</b>, or simply reconnect with this box.",
             'buttonlabel1': "Cancel Transfer",
-            'buttonaction1': "wtv-setup:/cancel-account-transfer",
+            'buttonaction1': "wtv-head-waiter:/cancel-account-transfer",
             'buttonlabel2': "Power Off",
-            'buttonaction2': "client:poweroff", // TODO: change to poweroff when code is ready
+            'buttonaction2': "client:poweroff",
             'noback': true,
         }).getURL();
 
         session_data.setPendingTransfer(request_headers.query.ssid);
+        session_data.setUserLoggedIn(false);
         var errpage = wtvshared.doRedirect(transferInitiated);
         headers = errpage[0];
         data = errpage[1];
