@@ -1057,7 +1057,7 @@ minisrv-no-mail-count: true`;
             if ((shortURL.indexOf(":/ROMCache/") != -1 || shortURL.indexOf("://ROMCache/") != -1) && minisrv_config.config.enable_shared_romcache) {
                 shared_romcache = wtvshared.fixPathSlashes(minisrv_config.config.SharedROMCache + path.sep + shortURL.split(':/')[1]);
             } 
-            if (minisrv_config.config.debug_flags.show_headers) console.debug(" * Incoming headers on socket ID", socket.id, (await wtvshared.decodePostData(await wtvshared.filterRequestLog(await wtvshared.filterSSID(request_headers)))));
+            if (minisrv_config.config.debug_flags.show_headers) console.debug(" * Incoming", (pc_services) ? "HTTP" : "WTVP", "headers on", (pc_services) ? "HTTP" : "WTVP", "socket ID", socket.id, await wtvshared.decodePostData(await wtvshared.filterRequestLog(await wtvshared.filterSSID(request_headers))));
             socket_sessions[socket.id].request_headers = request_headers;
             processPath(socket, urlToPath, request_headers, service_name, shared_romcache, pc_services);
         } else if (shortURL.indexOf('http://') >= 0 || shortURL.indexOf('https://') >= 0 || (use_external_proxy == true && shortURL.indexOf(service_name + "://") >= 0) && !pc_services) {
@@ -1078,7 +1078,7 @@ minisrv-no-mail-count: true`;
         } else {
             if (request_headers.request.indexOf("HTTP/1.0") > 0) {
                 // webtv in HTTP/1.0 mode, try to kick it back to WTVP
-                if (minisrv_config.config.debug_flags.show_headers) console.debug(" * Incoming headers (HTTP/1.0) on socket ID", socket.id, (await wtvshared.decodePostData(await wtvshared.filterRequestLog(await wtvshared.filterSSID(request_headers)))));
+                if (minisrv_config.config.debug_flags.show_headers) console.debug(" * Incoming HTTP/1.0 headers on WTVP socket ID", socket.id, await wtvshared.decodePostData(await wtvshared.filterRequestLog(await wtvshared.filterSSID(request_headers))));
                 var errpage = wtvshared.doErrorPage(500, null, null, false, true);
                 headers = errpage[0];
                 data = ''
@@ -1086,7 +1086,7 @@ minisrv-no-mail-count: true`;
                 sendToClient(socket, headers, data);
             } else {
                 // error reading headers (no request_url provided)
-                if (minisrv_config.config.debug_flags.show_headers) console.debug(" * Incoming headers (INVALID) on socket ID", socket.id, (await wtvshared.decodePostData(await wtvshared.filterRequestLog(await wtvshared.filterSSID(request_headers)))));
+                if (minisrv_config.config.debug_flags.show_headers) console.debug(" * Incoming Invalid headers on WTVP socket ID", socket.id, await wtvshared.decodePostData(await wtvshared.filterRequestLog(await wtvshared.filterSSID(request_headers))));
                 var errpage = wtvshared.doErrorPage(400, null, null, false, true);
                 headers = errpage[0];
                 data = ''

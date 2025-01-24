@@ -119,12 +119,14 @@ class WTVShared {
             return new RegExp(src);
         } else if (src instanceof Date) {
             return new Date(src.getTime());
-        } else if (Array.isArray(src)) {
-            return src.map(item => this.cloneObj(item));
         } else if (typeof src === 'object' && src !== null) {
-            const clone = {};
-            Object.keys(src).forEach(k => {
-                clone[k] = this.cloneObj(src[k]);
+            var clone = null;
+            if (Array.isArray(src)) clone = [];
+            else clone = {};
+
+            var self = this;
+            Object.keys(src).forEach((k) => {
+                clone[k] = self.cloneObj(src[k]);
             });
             return clone;
         }
@@ -749,7 +751,7 @@ class WTVShared {
     */
     filterSSID(obj) {
         var new_obj = false;
-        if (this.minisrv_config && this.minisrv_config.config.hide_ssid_in_logs) {
+        if (this.minisrv_config.config.hide_ssid_in_logs) {
             if (typeof obj === "string") {
                 return this.censorSSID(obj);
             } else if (typeof obj === "object" && obj !== null) {
@@ -765,23 +767,18 @@ class WTVShared {
 
 
     filterRequestLog(obj) {
-        if (this.minisrv_config.config.filter_passwords_in_logs && obj.query) {
-            const passwordRegex = /(^pass$|passw(or)?d)/i;
-            let newobj = this.cloneObj(obj); // Clone the object once at the beginning
+        const passwordRegex = /(^pass$|passw(or)?d)/i;
+        var newobj = this.cloneObj(obj); // Clone the object once at the beginning
 
-            if (newobj.query) {
-                Object.keys(newobj.query).forEach((k) => {
-                    if (passwordRegex.test(k)) {
-                        newobj.query[k] = '*'.repeat(newobj.query[k].length);
-                    }
-                });
-            }
-            delete newobj.raw_headers;
-
-            return newobj;
+        if (newobj.query) {
+            Object.keys(newobj.query).forEach((k) => {
+                if (passwordRegex.test(k)) {
+                    newobj.query[k] = '*'.repeat(newobj.query[k].length);
+                }
+            });
         }
-
-        return obj;
+        delete newobj.raw_headers;
+        return newobj;
     }
 
 
