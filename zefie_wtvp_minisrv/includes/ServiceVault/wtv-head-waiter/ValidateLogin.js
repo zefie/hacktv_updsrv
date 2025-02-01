@@ -1,5 +1,3 @@
-const { hasAttrib } = require("c:/users/zefie/appdata/local/microsoft/typescript/5.2/node_modules/domutils/lib/traversal");
-
 var minisrv_service_file = true;
 
 var challenge_response, challenge_header = '';
