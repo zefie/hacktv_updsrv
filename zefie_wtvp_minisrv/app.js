@@ -211,6 +211,7 @@ var runScriptInVM = function (script_data, user_contextObj = {}, privileged = fa
         // node core variables and functions
         "console": console, // needed for per-script debugging
         "__dirname": __dirname, // needed by services such as wtv-flashrom and wtv-disk
+        "__filename": (filename) ? filename : null, // path to the script file
 
         // Our modules
         "wtvmime": wtvmime,
@@ -239,9 +240,10 @@ var runScriptInVM = function (script_data, user_contextObj = {}, privileged = fa
         "sendToClient": sendToClient,
         "service_vaults": service_vaults,
         "service_deps": service_deps,
+        "service_name": (socket.pc_service_name) ? socket.pc_service_name : socket.service_name,
         "ssid_sessions": ssid_sessions,
         "moveArrayKey": moveArrayKey,
-        "cwd": __dirname, // current working directory
+        "cwd": (filename) ? path.dirname(filename) : __dirname, // current working directory        
 
         // Our prototype overrides
         "Buffer": Buffer,
@@ -483,6 +485,7 @@ async function processPath(socket, service_vault_file_path, request_headers = ne
 
     if (pc_services) {
         var pc_service_name = getServiceByVaultDir(service_name)
+        socket.pc_service_name = pc_service_name;
         if (minisrv_config.services[pc_service_name].service_vaults) {
             vaults_to_scan = vaults_to_scan.concat(minisrv_config.services[pc_service_name].service_vaults);
         }
@@ -744,7 +747,7 @@ async function processPath(socket, service_vault_file_path, request_headers = ne
                     }
                 } else {
                     // look for a catchall in the current path and all parent paths up until the service root
-                    var service_config = minisrv_config.services[service_name] || {};
+                    var service_config = ((pc_services) ? minisrv_config.services[pc_service_name] : minisrv_config.services[service_name]) || {};
                     if (minisrv_config.config.catchall_file_name || service_config['catchall_file_name']) {
                         var minisrv_catchall_file_name = service_config['catchall_file_name'] || minisrv_config.config.catchall_file_name || null;
                         if (minisrv_catchall_file_name) {

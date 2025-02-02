@@ -356,6 +356,7 @@
       "privileged": true,
       "use_https": false,
       "force_https": false,
+      "catchall_file_name": "indexer.js",
       "https_cert": {
         /* self-signed, can be replaced with another cert */
         // "domain": "mycooldomain.com",
